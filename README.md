@@ -74,19 +74,19 @@
 ### 📊 GitHub Stats
 
 <p align="center">
-  <img height="165" src="https://github-readme-stats.vercel.app/api?username=Muhammad-Abubakar18&show_icons=true&theme=tokyonight&hide_border=true&count_private=true&include_all_commits=true" />
-  <img height="165" src="https://github-readme-stats.vercel.app/api/top-langs/?username=Muhammad-Abubakar18&layout=compact&theme=tokyonight&hide_border=true" />
+  <img height="165" src="./profile/stats.svg" />
+  <img height="165" src="./profile/top-langs.svg" />
 </p>
 
 <p align="center">
-  <img src="https://streak-stats.demolab.com/?user=Muhammad-Abubakar18&theme=tokyonight&hide_border=true" />
+  <img src="./profile/streak.svg" />
 </p>
 
 <p align="center">
   <img src="https://github-readme-activity-graph.vercel.app/graph?username=Muhammad-Abubakar18&theme=tokyo-night&hide_border=true" />
 </p>
 
-> ⚠️ **Known issue:** The public `github-readme-stats.vercel.app` and `github-readme-activity-graph.vercel.app` instances are shared by millions of profiles and frequently return broken images (503 errors) due to rate limits. If the cards above don't load, or your contribution count looks too low (it counts commits-only, current-year-only, and excludes private repos by default), **self-host your own instance** — see the setup steps below. The streak stats now point to `streak-stats.demolab.com` (the actively maintained mirror), which is more stable than the old Heroku URL.
+> ✅ **Fixed the reliability issue:** the stats and streak cards above are no longer pulled from the public, rate-limited Vercel endpoint. Instead, a GitHub Actions workflow (included as `update-readme-stats.yml`) regenerates them as **static SVG files inside this repo** once a day — so they always load, and they correctly include your private contributions and full commit history. See the setup steps below. The activity graph still uses the public endpoint since it doesn't have an official self-hosted Action yet; if it ever breaks, you can safely delete that line without affecting the rest.
 
 ---
 
@@ -174,9 +174,22 @@ Mobile app serving 500+ users with a 98% notification delivery rate, improving m
   <img src="https://github-readme-activity-graph.vercel.app/graph?username=Muhammad-Abubakar18&theme=react-dark&hide_border=true&area=true" alt="contribution graph"/>
 </p>
 
+### ⚙️ One-Time Setup (fixes the stats permanently)
+
 <details>
-<summary><b>🐍 Contribution Snake (optional — needs a one-time GitHub Action)</b></summary>
+<summary><b>Click to see the 4 setup steps</b></summary>
 <br>
+
+1. **Create a Personal Access Token** — Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token, with the `repo` scope checked (this lets it see your private contributions).
+2. **Add it as a repo secret** — In your profile repo (`Muhammad-Abubakar18/Muhammad-Abubakar18`), go to Settings → Secrets and variables → Actions → New repository secret → name it `STATS_PAT` → paste the token.
+3. **Add the workflow file** — Create `.github/workflows/update-readme-stats.yml` in your profile repo and paste in the contents of `update-readme-stats.yml` (provided alongside this README).
+4. **Run it once manually** — Go to the Actions tab → "Update README Stats" → Run workflow. It'll commit `profile/stats.svg`, `profile/top-langs.svg`, and `profile/streak.svg` into your repo, and the README will pick them up immediately. After that, it re-runs automatically every day.
+
+</details>
+
+---
+
+### 🐍 Contribution Snake (optional)
 
 Add this workflow to `.github/workflows/snake.yml` in your **profile repo** to auto-generate an animated contribution snake:
 
@@ -208,8 +221,6 @@ Then embed it here:
 ```md
 ![snake](https://raw.githubusercontent.com/Muhammad-Abubakar18/Muhammad-Abubakar18/output/github-contribution-grid-snake.svg)
 ```
-
-</details>
 
 ---
 
