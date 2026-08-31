@@ -74,19 +74,19 @@
 ### 📊 GitHub Stats
 
 <p align="center">
-  <img height="165" src="https://github-readme-stats.vercel.app/api?username=Muhammad-Abubakar18&show_icons=true&theme=tokyonight&hide_border=true&count_private=true" />
+  <img height="165" src="https://github-readme-stats.vercel.app/api?username=Muhammad-Abubakar18&show_icons=true&theme=tokyonight&hide_border=true&count_private=true&include_all_commits=true" />
   <img height="165" src="https://github-readme-stats.vercel.app/api/top-langs/?username=Muhammad-Abubakar18&layout=compact&theme=tokyonight&hide_border=true" />
 </p>
 
 <p align="center">
-  <img src="https://github-readme-streak-stats.herokuapp.com/?user=Muhammad-Abubakar18&theme=tokyonight&hide_border=true" />
+  <img src="https://streak-stats.demolab.com/?user=Muhammad-Abubakar18&theme=tokyonight&hide_border=true" />
 </p>
 
 <p align="center">
   <img src="https://github-readme-activity-graph.vercel.app/graph?username=Muhammad-Abubakar18&theme=tokyo-night&hide_border=true" />
 </p>
 
-> ℹ️ **Note:** GitHub stat cards above render automatically once this README is on your profile repo — just make sure `Muhammad-Abubakar18` matches your exact GitHub username.
+> ⚠️ **Known issue:** The public `github-readme-stats.vercel.app` and `github-readme-activity-graph.vercel.app` instances are shared by millions of profiles and frequently return broken images (503 errors) due to rate limits. If the cards above don't load, or your contribution count looks too low (it counts commits-only, current-year-only, and excludes private repos by default), **self-host your own instance** — see the setup steps below. The streak stats now point to `streak-stats.demolab.com` (the actively maintained mirror), which is more stable than the old Heroku URL.
 
 ---
 
