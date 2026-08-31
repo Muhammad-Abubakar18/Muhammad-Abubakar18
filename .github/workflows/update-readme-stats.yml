@@ -33,13 +33,11 @@ jobs:
           token: ${{ secrets.STATS_PAT }}
 
       - name: Generate streak stats card
-        uses: DenverCoder1/github-readme-streak-stats@v4
-        env:
-          USER_NAME: ${{ github.repository_owner }}
+        uses: DenverCoder1/github-readme-streak-stats@main
         with:
-          user_id: ${{ github.repository_owner }}
-          theme: tokyonight
-          hide_border: true
+          options: 'user=${{ github.repository_owner }}&theme=tokyonight&hide_border=true'
+          path: profile/streak.svg
+          token: ${{ secrets.STATS_PAT }}
         continue-on-error: true
 
       - name: Commit generated cards
