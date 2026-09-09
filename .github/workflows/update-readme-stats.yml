@@ -23,6 +23,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      # --------------------------------------------------
+      # GitHub Stats
+      # --------------------------------------------------
       - name: Generate GitHub Stats
         uses: stats-organization/github-readme-stats-action@v2
         with:
@@ -31,6 +34,9 @@ jobs:
           path: profile/stats.svg
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # --------------------------------------------------
+      # Top Languages
+      # --------------------------------------------------
       - name: Generate Top Languages
         uses: stats-organization/github-readme-stats-action@v2
         with:
@@ -39,15 +45,241 @@ jobs:
           path: profile/top-langs.svg
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate Contribution Streak
-        uses: DenverCoder1/github-readme-streak-stats@main
-        with:
-          options: user=${{ github.repository_owner }}&theme=tokyonight&hide_border=true&disable_animations=true&locale=en&timezone=Asia/Karachi&starting_year=2024
-          path: profile/streak.svg
-          token: ${{ secrets.STATS_PAT }}
-        continue-on-error: true
+      # --------------------------------------------------
+      # Get GitHub contribution calendar
+      # --------------------------------------------------
+      - name: Get contribution data
+        env:
+          GH_TOKEN: ${{ secrets.STATS_PAT }}
+          USERNAME: ${{ github.repository_owner }}
+        run: |
+          python - <<'PY'
+          import os
+          import json
+          import urllib.request
+          from datetime import datetime, timedelta, timezone
 
-      - name: Commit updated cards
+          token = os.environ["GH_TOKEN"]
+          username = os.environ["USERNAME"]
+
+          now = datetime.now(timezone.utc)
+          start = now - timedelta(days=365)
+
+          query = """
+          query($login: String!, $from: DateTime!, $to: DateTime!) {
+            user(login: $login) {
+              contributionsCollection(from: $from, to: $to) {
+                contributionCalendar {
+                  totalContributions
+                  weeks {
+                    contributionDays {
+                      date
+                      contributionCount
+                    }
+                  }
+                }
+              }
+            }
+          }
+          """
+
+          variables = {
+              "login": username,
+              "from": start.isoformat(),
+              "to": now.isoformat()
+          }
+
+          data = json.dumps({
+              "query": query,
+              "variables": variables
+          }).encode()
+
+          request = urllib.request.Request(
+              "https://api.github.com/graphql",
+              data=data,
+              headers={
+                  "Authorization": f"Bearer {token}",
+                  "Content-Type": "application/json",
+                  "User-Agent": "github-readme-stats"
+              }
+          )
+
+          with urllib.request.urlopen(request) as response:
+              result = json.load(response)
+
+          if "errors" in result:
+              print(result["errors"])
+              raise SystemExit("GitHub GraphQL request failed")
+
+          calendar = result["data"]["user"]["contributionsCollection"]["contributionCalendar"]
+
+          total = calendar["totalContributions"]
+
+          days = []
+
+          for week in calendar["weeks"]:
+              for day in week["contributionDays"]:
+                  days.append({
+                      "date": day["date"],
+                      "count": day["contributionCount"]
+                  })
+
+          days.sort(key=lambda x: x["date"])
+
+          # Calculate current streak
+          current_streak = 0
+
+          for day in reversed(days):
+              if day["count"] > 0:
+                  current_streak += 1
+              else:
+                  break
+
+          # Calculate longest streak
+          longest_streak = 0
+          running = 0
+
+          for day in days:
+              if day["count"] > 0:
+                  running += 1
+                  longest_streak = max(longest_streak, running)
+              else:
+                  running = 0
+
+          stats = {
+              "total": total,
+              "current_streak": current_streak,
+              "longest_streak": longest_streak,
+              "days": days
+          }
+
+          with open("profile/contribution-data.json", "w") as f:
+              json.dump(stats, f, indent=2)
+
+          print(f"Total contributions: {total}")
+          print(f"Current streak: {current_streak}")
+          print(f"Longest streak: {longest_streak}")
+          PY
+
+      # --------------------------------------------------
+      # Generate custom streak SVG
+      # --------------------------------------------------
+      - name: Generate contribution SVG
+        run: |
+          python - <<'PY'
+          import json
+          import html
+
+          with open("profile/contribution-data.json") as f:
+              data = json.load(f)
+
+          total = data["total"]
+          current = data["current_streak"]
+          longest = data["longest_streak"]
+
+          svg = f'''<svg width="760" height="300" viewBox="0 0 760 300"
+          xmlns="http://www.w3.org/2000/svg">
+
+          <rect width="760" height="300" rx="8" fill="#1a1b26"/>
+
+          <text x="380" y="48"
+                text-anchor="middle"
+                font-family="Arial, sans-serif"
+                font-size="25"
+                font-weight="bold"
+                fill="#70a5fd">
+              GitHub Contribution Stats
+          </text>
+
+          <line x1="253" y1="75" x2="253" y2="245"
+                stroke="#ffffff" stroke-width="2"/>
+
+          <line x1="507" y1="75" x2="507" y2="245"
+                stroke="#ffffff" stroke-width="2"/>
+
+          <!-- Total Contributions -->
+          <text x="126" y="125"
+                text-anchor="middle"
+                font-family="Arial, sans-serif"
+                font-size="42"
+                font-weight="bold"
+                fill="#70a5fd">
+              {total}
+          </text>
+
+          <text x="126" y="165"
+                text-anchor="middle"
+                font-family="Arial, sans-serif"
+                font-size="18"
+                fill="#70a5fd">
+              Total Contributions
+          </text>
+
+          <text x="126" y="195"
+                text-anchor="middle"
+                font-family="Arial, sans-serif"
+                font-size="14"
+                fill="#2dd4bf">
+              Last 365 Days
+          </text>
+
+          <!-- Current Streak -->
+          <text x="380" y="125"
+                text-anchor="middle"
+                font-family="Arial, sans-serif"
+                font-size="42"
+                font-weight="bold"
+                fill="#bb86fc">
+              {current}
+          </text>
+
+          <text x="380" y="165"
+                text-anchor="middle"
+                font-family="Arial, sans-serif"
+                font-size="18"
+                font-weight="bold"
+                fill="#bb86fc">
+              Current Streak
+          </text>
+
+          <!-- Longest Streak -->
+          <text x="634" y="125"
+                text-anchor="middle"
+                font-family="Arial, sans-serif"
+                font-size="42"
+                font-weight="bold"
+                fill="#70a5fd">
+              {longest}
+          </text>
+
+          <text x="634" y="165"
+                text-anchor="middle"
+                font-family="Arial, sans-serif"
+                font-size="18"
+                fill="#70a5fd">
+              Longest Streak
+          </text>
+
+          <text x="380" y="235"
+                text-anchor="middle"
+                font-family="Arial, sans-serif"
+                font-size="13"
+                fill="#2dd4bf">
+              Data from GitHub Contribution Calendar
+          </text>
+
+          </svg>'''
+
+          with open("profile/streak.svg", "w") as f:
+              f.write(svg)
+
+          print("Contribution SVG generated successfully.")
+          PY
+
+      # --------------------------------------------------
+      # Commit generated files
+      # --------------------------------------------------
+      - name: Commit updated stats
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -56,6 +288,6 @@ jobs:
           git add profile/top-langs.svg
           git add profile/streak.svg
 
-          git diff --cached --quiet || git commit -m "Update README stats"
+          git commit -m "Update GitHub statistics" || echo "No changes to commit"
 
           git push
